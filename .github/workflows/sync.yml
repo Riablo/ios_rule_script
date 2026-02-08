@@ -1,0 +1,32 @@
+name: Sync Fork
+
+on:
+  schedule:
+    # 每天 UTC 时间 0:00 运行（北京时间 8:00）
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Sync fork
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git remote add upstream https://github.com/blackmatrix7/ios_rule_script.git
+          git fetch upstream
+          
+          # 同步 master 分支
+          git checkout master || git checkout -b master
+          git merge upstream/master
+          git push origin master
+          
+          # 同步 release 分支
+          git checkout release || git checkout -b release
+          git merge upstream/release
+          git push origin release
